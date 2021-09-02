@@ -2,9 +2,10 @@ package db
 
 import (
 	"context"
-	"simplebankapi/util"
 	"testing"
 	"time"
+
+	"github.com/ifantsai/simple-bank-api/util"
 
 	"github.com/stretchr/testify/require"
 )
