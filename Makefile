@@ -19,9 +19,12 @@ sqlc:
 test:
 	go test -v  -cover ./...
 
+server:
+	go run main.go
+
 dep:
 	curl -L https://packagecloud.io/golang-migrate/migrate/gpgkey | apt-key add -
 	echo "deb https://packagecloud.io/golang-migrate/migrate/ubuntu/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/migrate.list
 	apt update && apt install -y migrate sqlc
 
-.PHONY: postgres createdb dropdb migrateup migratedown dep sqlc test
+.PHONY: postgres createdb dropdb migrateup migratedown dep sqlc test server

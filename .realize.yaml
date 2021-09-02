@@ -1,0 +1,23 @@
+settings:
+  legacy:
+    force: false
+    interval: 0s
+schema:
+- name: simple-bank-api
+  path: .
+  commands:
+    install:
+      status: true
+      method: go build -o bin/simple-bink-api cmd/simple-bank-api/run.go
+    run:
+      status: true
+      method: bin/simple-bink-api
+  watcher:
+    extensions:
+    - go
+    paths:
+    - /
+    ignored_paths:
+    - .git
+    - .realize
+    - vendor
