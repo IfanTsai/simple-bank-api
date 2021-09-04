@@ -19,6 +19,9 @@ sqlc:
 test:
 	go test -v  -cover ./...
 
+mock:
+	mockgen -package mockdb -destination db/mock/store.go  github.com/ifantsai/simple-bank-api/db/sqlc Store
+
 server:
 	go run main.go
 
@@ -27,4 +30,4 @@ dep:
 	echo "deb https://packagecloud.io/golang-migrate/migrate/ubuntu/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/migrate.list
 	apt update && apt install -y migrate sqlc
 
-.PHONY: postgres createdb dropdb migrateup migratedown dep sqlc test server
+.PHONY: postgres createdb dropdb migrateup migratedown dep sqlc test server mock
