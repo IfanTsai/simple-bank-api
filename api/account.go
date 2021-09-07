@@ -5,6 +5,8 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/lib/pq"
+
 	db "github.com/ifantsai/simple-bank-api/db/sqlc"
 
 	"github.com/gin-gonic/gin"
@@ -38,7 +40,17 @@ func (s *Server) createAccount(c *gin.Context) {
 		Balance:  0,
 	})
 	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok {
+			switch pqErr.Code.Name() {
+			case "foreign_key_violation", "unique_violation":
+				c.JSON(http.StatusForbidden, errorResponse(err))
+
+				return
+			}
+		}
 		c.JSON(http.StatusInternalServerError, errorResponse(err))
+
+		return
 	}
 
 	c.JSON(http.StatusOK, account)
