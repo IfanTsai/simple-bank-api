@@ -31,9 +31,10 @@ mock:
 server:
 	go run main.go
 
-dep:
+deps:
+	go get github.com/kyleconroy/sqlc/cmd/sqlc
 	curl -L https://packagecloud.io/golang-migrate/migrate/gpgkey | apt-key add -
-	echo "deb https://packagecloud.io/golang-migrate/migrate/ubuntu/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/migrate.list
-	apt update && apt install -y migrate sqlc
+	echo "deb https://packagecloud.io/golang-migrate/migrate/ubuntu/ $$(lsb_release -sc) main" > /etc/apt/sources.list.d/migrate.list
+	apt update && apt install -y migrate
 
-.PHONY: postgres createdb dropdb migrateup migratedown migrateup1 migratedown1 dep sqlc test server mock
+.PHONY: postgres createdb dropdb migrateup migratedown migrateup1 migratedown1 deps sqlc test server mock
