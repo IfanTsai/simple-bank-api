@@ -5,11 +5,9 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/lib/pq"
-
-	db "github.com/ifantsai/simple-bank-api/db/sqlc"
-
 	"github.com/gin-gonic/gin"
+	db "github.com/ifantsai/simple-bank-api/db/sqlc"
+	"github.com/lib/pq"
 )
 
 type createAccountRequest struct {
@@ -40,7 +38,7 @@ func (s *Server) createAccount(c *gin.Context) {
 		Balance:  0,
 	})
 	if err != nil {
-		if pqErr, ok := err.(*pq.Error); ok {
+		if pqErr, ok := err.(*pq.Error); ok { // nolint: errorlint
 			switch pqErr.Code.Name() {
 			case "foreign_key_violation", "unique_violation":
 				c.JSON(http.StatusForbidden, errorResponse(err))

@@ -4,9 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pkg/errors"
-
 	"github.com/ifantsai/simple-bank-api/util"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 )
 

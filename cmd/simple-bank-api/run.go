@@ -4,11 +4,9 @@ import (
 	"database/sql"
 	"log"
 
-	"github.com/ifantsai/simple-bank-api/util"
-
 	"github.com/ifantsai/simple-bank-api/api"
 	db "github.com/ifantsai/simple-bank-api/db/sqlc"
-
+	"github.com/ifantsai/simple-bank-api/util"
 	_ "github.com/lib/pq"
 )
 

@@ -6,13 +6,13 @@ import (
 	"fmt"
 )
 
-// Store provides all functions to execute db queries and transactions
+// Store provides all functions to execute db queries and transactions.
 type Store interface {
 	Querier
 	TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error)
 }
 
-// SQLStore provides all functions to execute SQL queries and transactions
+// SQLStore provides all functions to execute SQL queries and transactions.
 type SQLStore struct {
 	*Queries
 	db *sql.DB
@@ -25,14 +25,14 @@ func NewStore(db *sql.DB) Store {
 	}
 }
 
-// TransferTxParams contains the input parameters of the transfer transaction
+// TransferTxParams contains the input parameters of the transfer transaction.
 type TransferTxParams struct {
 	FromAccountID int64 `json:"from_account_id"`
 	ToAccountID   int64 `json:"to_account_id"`
 	Amount        int64 `json:"amount"`
 }
 
-// TransferTxResult is the result of the transfer transaction
+// TransferTxResult is the result of the transfer transaction.
 type TransferTxResult struct {
 	Transfer    Transfer `json:"transfer"`
 	FromAccount Account  `json:"from_account"`
@@ -42,7 +42,7 @@ type TransferTxResult struct {
 }
 
 // TransferTx performs a money transfer from one account to the other.
-// It creates a transfer record, add acount entries, and update accounts balance within s single database transaction
+// It creates a transfer record, add acount entries, and update accounts balance within s single database transaction.
 func (s *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
 	var result TransferTxResult
 
@@ -88,7 +88,7 @@ func (s *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (Transf
 	return result, err
 }
 
-// execTx executes a function within a database transaction
+// execTx executes a function within a database transaction.
 func (s *SQLStore) execTx(ctx context.Context, fn func(queries *Queries) error) error {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {

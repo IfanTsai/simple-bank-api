@@ -1,0 +1,28 @@
+run:
+  skip-dirs:
+    - db/mock
+    - db/sqlc
+  tests: false
+
+linters-settings:
+  maligned:
+    suggest-new: true
+  gocritic:
+    disabled-checks:
+      - singleCaseSwitch
+  gosec:
+    excludes:
+      - G404
+
+linters:
+  enable-all: true
+  disable:
+    - wsl
+    - funlen
+    - tagliatelle
+    - testpackage
+    - gochecknoinits
+    - gomnd
+    - godox
+    - exhaustivestruct
+    - gochecknoglobals
