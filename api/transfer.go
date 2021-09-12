@@ -3,11 +3,11 @@ package api
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	db "github.com/ifantsai/simple-bank-api/db/sqlc"
+	xerrors "github.com/pkg/errors"
 )
 
 type transferRequest struct {
@@ -55,7 +55,7 @@ func (s *Server) validAccount(c *gin.Context, accountID int64, currency string) 
 	}
 
 	if account.Currency != currency {
-		err := fmt.Errorf("account [%d] currency mismatch: %s vs %s", account.ID, account.Currency, currency)
+		err := xerrors.Errorf("account [%d] currency mismatch: %s vs %s", account.ID, account.Currency, currency)
 		c.JSON(http.StatusBadRequest, errorResponse(err))
 
 		return false

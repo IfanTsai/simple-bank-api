@@ -4,11 +4,9 @@ import (
 	"testing"
 	"time"
 
-	xerrors "github.com/pkg/errors"
-
 	"github.com/golang-jwt/jwt"
-
 	"github.com/ifantsai/simple-bank-api/util"
+	xerrors "github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 )
 

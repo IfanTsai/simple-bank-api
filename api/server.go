@@ -3,11 +3,11 @@ package api
 import (
 	"log"
 
+	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	db "github.com/ifantsai/simple-bank-api/db/sqlc"
-
-	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 )
 
 // Server serves HTTP requests for our banking service.
@@ -41,7 +41,7 @@ func NewServer(store db.Store) *Server {
 
 // Start runs the HTTP server on a specific address.
 func (s *Server) Start(address string) error {
-	return s.router.Run(address)
+	return errors.Wrap(s.router.Run(address), "failed to run server")
 }
 
 func errorResponse(err error) gin.H {

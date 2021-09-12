@@ -11,19 +11,13 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/lib/pq"
-
-	"github.com/golang/mock/gomock"
-
 	"github.com/gin-gonic/gin"
-
+	"github.com/golang/mock/gomock"
 	mockdb "github.com/ifantsai/simple-bank-api/db/mock"
-
 	db "github.com/ifantsai/simple-bank-api/db/sqlc"
-
-	"github.com/stretchr/testify/require"
-
 	"github.com/ifantsai/simple-bank-api/util"
+	"github.com/lib/pq"
+	"github.com/stretchr/testify/require"
 )
 
 type eqCreateUserParamsMatcher struct {
@@ -43,6 +37,7 @@ func (e *eqCreateUserParamsMatcher) Matches(x interface{}) bool {
 	}
 
 	e.arg.HashedPassword = arg.HashedPassword
+
 	return reflect.DeepEqual(arg, e.arg)
 }
 

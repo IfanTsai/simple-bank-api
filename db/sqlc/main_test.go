@@ -7,12 +7,13 @@ import (
 	"testing"
 
 	"github.com/ifantsai/simple-bank-api/util"
-
 	_ "github.com/lib/pq"
 )
 
-var testQueries *Queries
-var testDB *sql.DB
+var (
+	testQueries *Queries
+	testDB      *sql.DB
+)
 
 func TestMain(m *testing.M) {
 	config, err := util.LoadConfig("../..")

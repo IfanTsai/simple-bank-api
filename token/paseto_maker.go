@@ -3,13 +3,12 @@ package token
 import (
 	"time"
 
-	xerrors "github.com/pkg/errors"
-	"golang.org/x/crypto/chacha20poly1305"
-
 	"github.com/o1egl/paseto"
+	"github.com/pkg/errors"
+	"golang.org/x/crypto/chacha20poly1305"
 )
 
-// PasetoMaker is a PASETO token maker
+// PasetoMaker is a PASETO token maker.
 type PasetoMaker struct {
 	paseto       *paseto.V2
 	symmetricKey []byte
@@ -18,7 +17,7 @@ type PasetoMaker struct {
 func NewPasetoMaker(symmetricKey string) (Maker, error) {
 	if len(symmetricKey) != chacha20poly1305.KeySize {
 		return nil,
-			xerrors.Errorf("invalid key size: must be exactly %d characters", chacha20poly1305.KeySize)
+			errors.Errorf("invalid key size: must be exactly %d characters", chacha20poly1305.KeySize)
 	}
 
 	return &PasetoMaker{
@@ -27,26 +26,31 @@ func NewPasetoMaker(symmetricKey string) (Maker, error) {
 	}, nil
 }
 
-// CreateToken creates a new token for a specific username and duration
+// CreateToken creates a new token for a specific username and duration.
 func (maker *PasetoMaker) CreateToken(username string, duration time.Duration) (string, error) {
 	payload, err := NewPayload(username, duration)
 	if err != nil {
-		return "", xerrors.WithMessage(err, "failed to new payload")
+		return "", errors.WithMessage(err, "failed to new payload")
 	}
 
-	return maker.paseto.Encrypt(maker.symmetricKey, payload, nil)
+	token, err := maker.paseto.Encrypt(maker.symmetricKey, payload, nil)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to encrypt payload")
+	}
+
+	return token, nil
 }
 
-// VerifyToken checks if the token is valid or not
+// VerifyToken checks if the token is valid or not.
 func (maker *PasetoMaker) VerifyToken(token string) (*Payload, error) {
 	payload := &Payload{}
 
 	if err := maker.paseto.Decrypt(token, maker.symmetricKey, payload, nil); err != nil {
-		return nil, xerrors.Wrap(err, "failed to decrypt token")
+		return nil, errors.Wrap(err, "failed to decrypt token")
 	}
 
 	if err := payload.Valid(); err != nil {
-		return nil, xerrors.Wrap(err, "payload is not valid")
+		return nil, errors.Wrap(err, "payload is not valid")
 	}
 
 	return payload, nil
