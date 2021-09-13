@@ -23,7 +23,7 @@ sqlc:
 	sqlc generate
 
 test:
-	go test -v  -cover ./...
+	go test -v -cover ./...
 
 mock:
 	mockgen -package mockdb -destination db/mock/store.go  github.com/ifantsai/simple-bank-api/db/sqlc Store

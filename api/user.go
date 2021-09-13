@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"net/http"
 	"time"
 
@@ -8,6 +9,7 @@ import (
 	db "github.com/ifantsai/simple-bank-api/db/sqlc"
 	"github.com/ifantsai/simple-bank-api/util"
 	"github.com/lib/pq"
+	"github.com/pkg/errors"
 )
 
 type createUserRequest struct {
@@ -17,12 +19,32 @@ type createUserRequest struct {
 	Email    string `json:"email" binding:"required,email"`
 }
 
-type createUserResponse struct {
+type userResponse struct {
 	Username          string    `json:"username"`
 	FullName          string    `json:"full_name"`
 	Email             string    `json:"email"`
 	PasswordChangedAt time.Time `json:"password_changed_at"`
 	CreatedAt         time.Time `json:"created_at"`
+}
+
+type loginUserRequest struct {
+	Username string `json:"username" binding:"required,alphanum"`
+	Password string `json:"password" binding:"required,min=6"`
+}
+
+type loginUserResponse struct {
+	AccessToken string       `json:"access_token"`
+	User        userResponse `json:"user"`
+}
+
+func newUserResponse(user db.User) userResponse {
+	return userResponse{
+		Username:          user.Username,
+		FullName:          user.FullName,
+		Email:             user.Email,
+		PasswordChangedAt: user.PasswordChangedAt,
+		CreatedAt:         user.CreatedAt,
+	}
 }
 
 func (s *Server) createUser(c *gin.Context) {
@@ -60,11 +82,44 @@ func (s *Server) createUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, createUserResponse{
-		Username:          user.Username,
-		FullName:          user.FullName,
-		Email:             user.Email,
-		PasswordChangedAt: user.PasswordChangedAt,
-		CreatedAt:         user.CreatedAt,
+	c.JSON(http.StatusOK, newUserResponse(user))
+}
+
+func (s *Server) loginUser(c *gin.Context) {
+	var req loginUserRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, errorResponse(err))
+
+		return
+	}
+
+	user, err := s.store.GetUser(c, req.Username)
+	if err != nil {
+		errorHTTPCode := http.StatusInternalServerError
+		if errors.Is(errors.Cause(err), sql.ErrNoRows) {
+			errorHTTPCode = http.StatusNotFound
+		}
+
+		c.JSON(errorHTTPCode, errorResponse(err))
+
+		return
+	}
+
+	if err = util.CheckPassword(req.Password, user.HashedPassword); err != nil {
+		c.JSON(http.StatusUnauthorized, errorResponse(err))
+
+		return
+	}
+
+	accessToken, err := s.tokenMaker.CreateToken(user.Username, s.config.AccessTokenDuration)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, errorResponse(err))
+
+		return
+	}
+
+	c.JSON(http.StatusOK, loginUserResponse{
+		AccessToken: accessToken,
+		User:        newUserResponse(user),
 	})
 }
