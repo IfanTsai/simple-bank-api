@@ -26,3 +26,4 @@ linters:
     - godox
     - exhaustivestruct
     - gochecknoglobals
+    - goerr113

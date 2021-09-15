@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	db "github.com/ifantsai/simple-bank-api/db/sqlc"
+	"github.com/ifantsai/simple-bank-api/token"
 	xerrors "github.com/pkg/errors"
 )
 
@@ -25,7 +26,26 @@ func (s *Server) createTransfer(c *gin.Context) {
 		return
 	}
 
-	if !s.validAccount(c, req.FromAccountID, req.Currency) || !s.validAccount(c, req.ToAccountID, req.Currency) {
+	fromAccount, valid := s.validAccount(c, req.FromAccountID, req.Currency)
+	if !valid {
+		return
+	}
+
+	// A logged-in user can only send money from his/her own account
+	authPayload, ok := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	if !ok {
+		return
+	}
+
+	if fromAccount.Owner != authPayload.Username {
+		err := errors.New("from account doesn't belong to the authenticated user")
+		c.JSON(http.StatusUnauthorized, errorResponse(err))
+
+		return
+	}
+
+	_, valid = s.validAccount(c, req.ToAccountID, req.Currency)
+	if !valid {
 		return
 	}
 
@@ -41,7 +61,7 @@ func (s *Server) createTransfer(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-func (s *Server) validAccount(c *gin.Context, accountID int64, currency string) bool {
+func (s *Server) validAccount(c *gin.Context, accountID int64, currency string) (db.Account, bool) {
 	account, err := s.store.GetAccount(c, accountID)
 	if err != nil {
 		httpCode := http.StatusInternalServerError
@@ -51,15 +71,15 @@ func (s *Server) validAccount(c *gin.Context, accountID int64, currency string) 
 
 		c.JSON(httpCode, errorResponse(err))
 
-		return false
+		return account, false
 	}
 
 	if account.Currency != currency {
 		err := xerrors.Errorf("account [%d] currency mismatch: %s vs %s", account.ID, account.Currency, currency)
 		c.JSON(http.StatusBadRequest, errorResponse(err))
 
-		return false
+		return account, false
 	}
 
-	return true
+	return account, true
 }

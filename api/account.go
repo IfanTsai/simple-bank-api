@@ -7,11 +7,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	db "github.com/ifantsai/simple-bank-api/db/sqlc"
+	"github.com/ifantsai/simple-bank-api/token"
 	"github.com/lib/pq"
 )
 
 type createAccountRequest struct {
-	Owner    string `json:"owner" binding:"required"`
 	Currency string `json:"currency" binding:"required,currency"`
 }
 
@@ -32,8 +32,15 @@ func (s *Server) createAccount(c *gin.Context) {
 		return
 	}
 
+	// A logged-in user can only create an account for him/herself
+	// note: set payload in auth middleware
+	authPayload, ok := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	if !ok {
+		return
+	}
+
 	account, err := s.store.CreateAccount(c, db.CreateAccountParams{
-		Owner:    req.Owner,
+		Owner:    authPayload.Username,
 		Currency: req.Currency,
 		Balance:  0,
 	})
@@ -74,6 +81,19 @@ func (s *Server) getAccount(c *gin.Context) {
 		return
 	}
 
+	// A logged-in user can only get accounts that he/she owns
+	authPayload, ok := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	if !ok {
+		return
+	}
+
+	if account.Owner != authPayload.Username {
+		err := errors.New("account doesn't belong to the authenticated user")
+		c.JSON(http.StatusUnauthorized, errorResponse(err))
+
+		return
+	}
+
 	c.JSON(http.StatusOK, account)
 }
 
@@ -85,7 +105,14 @@ func (s *Server) listAccount(c *gin.Context) {
 		return
 	}
 
+	// A logged-in user can only list accounts that belong to him/her
+	authPayload, ok := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	if !ok {
+		return
+	}
+
 	accounts, err := s.store.ListAccounts(c, db.ListAccountsParams{
+		Owner:  authPayload.Username,
 		Limit:  req.PageSize,
 		Offset: (req.PageID - 1) * req.PageSize,
 	})
