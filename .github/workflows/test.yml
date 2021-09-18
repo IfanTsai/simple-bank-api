@@ -1,4 +1,4 @@
-name: ci-test
+name: Run golangci-lint and unint tests
 
 on:
   push:
@@ -8,7 +8,20 @@ on:
 
 jobs:
 
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.42.0
+
   test:
+    name: Test
+    needs: lint
     runs-on: ubuntu-latest
 
     # Service containers to run with `container-job`
