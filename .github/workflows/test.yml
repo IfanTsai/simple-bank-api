@@ -19,9 +19,8 @@ jobs:
         with:
           version: v1.42.0
 
-  test:
-    name: Test
-    needs: lint
+  unint-test:
+    name: Unint Test
     runs-on: ubuntu-latest
 
     # Service containers to run with `container-job`
