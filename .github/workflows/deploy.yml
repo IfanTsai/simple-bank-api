@@ -17,7 +17,15 @@ jobs:
         run:
           docker login --username=${{ secrets.ALIYUN_USERNAME }}  --password=${{ secrets.ALIYUN_PASSWORD }} registry.cn-hangzhou.aliyuncs.com
 
-      - name: Build, tag, and push image to Amazon ECR
+      - name: Load secrets and save to app.env
+        run: |
+          echo ${{ secrets.DB_DRIVER }} > app.env
+          echo ${{ secrets.DB_SOURCE }} >> app.env
+          echo ${{ secrtes.SERVER_ADDRESS }} >> app.env
+          echo ${{ secrtes.TOKEN_SYMMETRIC_KEY }} >> app.env
+          echo ${{ secrtes.ACCESS_TOKEN_DURATION }} >> app.env
+
+      - name: Build, tag, and push image to Aliyun
         env:
           REGISTRY: ${{ secrets.REGISTRY }}
           REPOSITORY: ${{ secrets.REPOSITORY }}
