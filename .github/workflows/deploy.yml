@@ -18,7 +18,7 @@ jobs:
           aliyun-username: ${{ secrets.ALIYUN_USERNAME }}
           aliyun-password: ${{ secrets.ALIYUN_PASSWORD }}
         run:
-          docker login --username=$aliyun-username  --password=$aliyun-password
+          docker login --username=$aliyun-username  --password=$aliyun-password registry.cn-hangzhou.aliyuncs.com
 
       - name: Build, tag, and push image to Amazon ECR
         env:
