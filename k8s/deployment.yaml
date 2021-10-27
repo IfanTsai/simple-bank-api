@@ -19,3 +19,5 @@ spec:
           image: {REGISTRY}/{REPOSITORY}:{IMAGE_TAG}
           ports:
           - containerPort: 8080
+      imagePullSecrets:
+        - name: aliyun
