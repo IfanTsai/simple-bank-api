@@ -6,8 +6,8 @@ on:
 
 jobs:
 
-  build:
-    name: Build images
+  build-and-deploy:
+    name: Build image and deploy to k8s
     runs-on: ubuntu-latest
 
     steps:
@@ -33,3 +33,41 @@ jobs:
         run: |
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+
+      - name: Modify deployment.yaml
+        env:
+          REGISTRY: ${{ secrets.REGISTRY }}
+          REPOSITORY: ${{ secrets.REPOSITORY }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          sed -i 's!{REGISTRY}!'$REGISTRY'!g' k8s/deployment.yaml
+          sed -i 's!{REPOSITORY}!'$REPOSITORY'!g' k8s/deployment.yaml
+          sed -i 's!{IMAGE_TAG}!'$IMAGE_TAG'!g' k8s/deployment.yaml
+
+      - name: Deploy image to k8s
+        uses: steebchen/kubectl@master
+        with:
+          config: ${{ secrets.KUBE_CONFIG_DATA }}
+          version: v1.22.0
+          command: apply -f k8s/deployment.yaml
+
+      - name: Verify deployment
+        uses: steebchen/kubectl@master
+        with:
+          config: ${{ secrets.KUBE_CONFIG_DATA }}
+          version: v1.22.0
+          command: rollout status deployment/simple-bank-api-deployment
+
+      - name: Create service
+        uses: steebchen/kubectl@master
+        with:
+          config: ${{ secrets.KUBE_CONFIG_DATA }}
+          version: v1.22.0
+          command: apply -f k8s/service.yaml
+
+      - name: Verify service
+        uses: steebchen/kubectl@master
+        with:
+          config: ${{ secrets.KUBE_CONFIG_DATA }}
+          version: v1.22.0
+          command: rollout status deployment/simple-bank-api-service
