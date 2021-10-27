@@ -35,14 +35,10 @@ jobs:
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
       - name: Modify deployment.yaml
-        env:
-          REGISTRY: ${{ secrets.REGISTRY }}
-          REPOSITORY: ${{ secrets.REPOSITORY }}
-          IMAGE_TAG: ${{ github.sha }}
         run: |
-          sed -i 's/{REGISTRY}/'$REGISTRY'/g' k8s/deployment.yaml
-          sed -i 's/{REPOSITORY}/'$REPOSITORY'/g' k8s/deployment.yaml
-          sed -i 's/{IMAGE_TAG}/'$IMAGE_TAG'/g' k8s/deployment.yaml
+          sed -i 's/{REGISTRY}/${{ secrets.REGISTRY }}/g' k8s/deployment.yaml
+          sed -i 's/{REPOSITORY}/${{ secrets.REPOSITORY }}/g' k8s/deployment.yaml
+          sed -i 's/{IMAGE_TAG}/${{ github.sha }}/g' k8s/deployment.yaml
 
       - name: Deploy image to k8s
         uses: steebchen/kubectl@master
