@@ -11,7 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ifantsai/simple-bank-api/token"
+	"github.com/IfanTsai/go-lib/gin/middlewares"
+
+	"github.com/IfanTsai/go-lib/user/token"
 
 	"github.com/golang/mock/gomock"
 	mockdb "github.com/ifantsai/simple-bank-api/db/mock"
@@ -35,7 +37,7 @@ func TestGetAccountAPI(t *testing.T) {
 			name:      "OK",
 			accountID: account.ID,
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBear, user.Username, time.Minute)
+				addAuthorization(t, request, tokenMaker, middlewares.AuthorizationTypeBear, user.Username, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -52,7 +54,7 @@ func TestGetAccountAPI(t *testing.T) {
 			name:      "NotFound",
 			accountID: account.ID,
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBear, user.Username, time.Minute)
+				addAuthorization(t, request, tokenMaker, middlewares.AuthorizationTypeBear, user.Username, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -68,7 +70,7 @@ func TestGetAccountAPI(t *testing.T) {
 			name:      "BadRequest",
 			accountID: 0,
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBear, user.Username, time.Minute)
+				addAuthorization(t, request, tokenMaker, middlewares.AuthorizationTypeBear, user.Username, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -83,7 +85,7 @@ func TestGetAccountAPI(t *testing.T) {
 			name:      "InternalServerError",
 			accountID: account.ID,
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBear, user.Username, time.Minute)
+				addAuthorization(t, request, tokenMaker, middlewares.AuthorizationTypeBear, user.Username, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -99,7 +101,7 @@ func TestGetAccountAPI(t *testing.T) {
 			name:      "UnauthorizedUser",
 			accountID: account.ID,
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBear, "unauthorized_user", time.Minute)
+				addAuthorization(t, request, tokenMaker, middlewares.AuthorizationTypeBear, "unauthorized_user", time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -169,4 +171,19 @@ func requireBodyMatchAccount(t *testing.T, body *bytes.Buffer, account db.Accoun
 	err = json.Unmarshal(data, &gotAccount)
 	require.NoError(t, err)
 	require.Equal(t, account, gotAccount)
+}
+
+func addAuthorization(
+	t *testing.T,
+	request *http.Request,
+	tokenMaker token.Maker,
+	authorizationType string,
+	username string,
+	duration time.Duration,
+) {
+	accessToken, err := tokenMaker.CreateToken(0, username, duration)
+	require.NoError(t, err)
+
+	authorizationHeader := fmt.Sprintf("%s %s", authorizationType, accessToken)
+	request.Header.Set(middlewares.AuthorizationHeaderKey, authorizationHeader)
 }

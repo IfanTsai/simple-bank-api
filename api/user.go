@@ -111,7 +111,8 @@ func (s *Server) loginUser(c *gin.Context) {
 		return
 	}
 
-	accessToken, err := s.tokenMaker.CreateToken(user.Username, s.config.AccessTokenDuration)
+	// Note: only use username
+	accessToken, err := s.tokenMaker.CreateToken(0, user.Username, s.config.AccessTokenDuration)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, errorResponse(err))
 

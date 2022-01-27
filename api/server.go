@@ -3,11 +3,12 @@ package api
 import (
 	"log"
 
+	"github.com/IfanTsai/go-lib/gin/middlewares"
+	"github.com/IfanTsai/go-lib/user/token"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	db "github.com/ifantsai/simple-bank-api/db/sqlc"
-	"github.com/ifantsai/simple-bank-api/token"
 	"github.com/ifantsai/simple-bank-api/util"
 	"github.com/pkg/errors"
 )
@@ -49,7 +50,7 @@ func (s *Server) setupRouter() {
 	router.POST("/users", s.createUser)
 	router.POST("/users/login", s.loginUser)
 
-	authRoutes := router.Group("/").Use(authMiddleware(s.tokenMaker))
+	authRoutes := router.Group("/").Use(middlewares.Authorization(s.tokenMaker))
 	authRoutes.POST("/accounts", s.createAccount)
 	authRoutes.GET("/accounts/:id", s.getAccount)
 	authRoutes.GET("/accounts", s.listAccount)
