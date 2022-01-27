@@ -27,3 +27,4 @@ linters:
     - exhaustivestruct
     - gochecknoglobals
     - goerr113
+    - varnamelen

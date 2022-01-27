@@ -5,9 +5,9 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/IfanTsai/go-lib/gin/middlewares"
 	"github.com/gin-gonic/gin"
 	db "github.com/ifantsai/simple-bank-api/db/sqlc"
-	"github.com/ifantsai/simple-bank-api/token"
 	xerrors "github.com/pkg/errors"
 )
 
@@ -32,12 +32,12 @@ func (s *Server) createTransfer(c *gin.Context) {
 	}
 
 	// A logged-in user can only send money from his/her own account
-	authPayload, ok := c.MustGet(authorizationPayloadKey).(*token.Payload)
-	if !ok {
+	username, err := middlewares.GetUsername(c)
+	if err != nil {
 		return
 	}
 
-	if fromAccount.Owner != authPayload.Username {
+	if fromAccount.Owner != username {
 		err := errors.New("from account doesn't belong to the authenticated user")
 		c.JSON(http.StatusUnauthorized, errorResponse(err))
 
