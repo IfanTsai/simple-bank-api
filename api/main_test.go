@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/IfanTsai/go-lib/randutils"
+
 	db "github.com/ifantsai/simple-bank-api/db/sqlc"
 	"github.com/ifantsai/simple-bank-api/util"
 	"github.com/stretchr/testify/require"
@@ -19,7 +21,7 @@ func TestMain(m *testing.M) {
 
 func newTestServer(t *testing.T, store db.Store) *Server {
 	config := util.Config{
-		TokenSymmetricKey:   util.RandomString(32),
+		TokenSymmetricKey:   randutils.RandomString(32),
 		AccessTokenDuration: time.Minute,
 	}
 

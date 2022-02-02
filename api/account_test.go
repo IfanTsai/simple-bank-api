@@ -11,6 +11,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/IfanTsai/go-lib/randutils"
+
 	"github.com/IfanTsai/go-lib/gin/middlewares"
 
 	"github.com/IfanTsai/go-lib/user/token"
@@ -156,7 +158,7 @@ func TestGetAccountAPI(t *testing.T) {
 
 func randomAccount(owner string) db.Account {
 	return db.Account{
-		ID:       util.RandomInt(1, 1000),
+		ID:       randutils.RandomInt(1, 1000),
 		Owner:    owner,
 		Balance:  util.RandomMoney(),
 		Currency: util.RandomCurrency(),

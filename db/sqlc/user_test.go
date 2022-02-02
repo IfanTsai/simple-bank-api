@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/IfanTsai/go-lib/randutils"
+
 	"github.com/ifantsai/simple-bank-api/util"
 	"github.com/stretchr/testify/require"
 )
@@ -28,7 +30,7 @@ func TestGetUser(t *testing.T) {
 }
 
 func createRandomUser(t *testing.T) User {
-	hashedPassword, err := util.HashPassword(util.RandomString(6))
+	hashedPassword, err := util.HashPassword(randutils.RandomString(6))
 	require.NoError(t, err)
 
 	arg := CreateUserParams{
