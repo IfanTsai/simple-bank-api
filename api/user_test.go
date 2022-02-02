@@ -11,6 +11,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/IfanTsai/go-lib/randutils"
+
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
 	mockdb "github.com/ifantsai/simple-bank-api/db/mock"
@@ -207,7 +209,7 @@ func TestCreateUser(t *testing.T) {
 }
 
 func randomUser(t *testing.T) (db.User, string) {
-	password := util.RandomString(6)
+	password := randutils.RandomString(6)
 	hashedPassword, err := util.HashPassword(password)
 	require.NoError(t, err)
 

@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/IfanTsai/go-lib/gin/middlewares"
+	"github.com/IfanTsai/go-lib/logger"
 	"github.com/IfanTsai/go-lib/user/token"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -45,12 +46,31 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 }
 
 func (s *Server) setupRouter() {
-	router := gin.Default()
+	version := "1.0.0"
+
+	_logger, err := logger.NewJSONLogger(
+		logger.WithDisableConsole(),
+		logger.WithFileRotationP("./logs/simple-bank.log"),
+	)
+	if err != nil {
+		log.Fatalln("cannot new json logger, err:", err)
+	}
+
+	router := gin.New()
+	router.Use(
+		middlewares.Logger(_logger),
+		middlewares.Recovery(version, _logger, true),
+		middlewares.Jsonifier(version),
+	)
+
+	if gin.Mode() != gin.TestMode {
+		middlewares.NewPrometheus("simple_bank", "api").Use(router)
+	}
 
 	router.POST("/users", s.createUser)
 	router.POST("/users/login", s.loginUser)
 
-	authRoutes := router.Group("/").Use(middlewares.Authorization(s.tokenMaker))
+	authRoutes := router.Group("/").Use(middlewares.Authorization(version, s.tokenMaker))
 	authRoutes.POST("/accounts", s.createAccount)
 	authRoutes.GET("/accounts/:id", s.getAccount)
 	authRoutes.GET("/accounts", s.listAccount)
