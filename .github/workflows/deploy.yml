@@ -2,7 +2,9 @@ name: Deploy to production
 
 on:
   push:
-    branches: [ master ]
+    tags:
+      - "v*.*"
+    #branches: [ master ]
 
 jobs:
 
@@ -12,7 +14,8 @@ jobs:
     env:
       REGISTRY: ${{ secrets.REGISTRY }}
       REPOSITORY: ${{ secrets.REPOSITORY }}
-      IMAGE_TAG: ${{ github.sha }}
+      #IMAGE_TAG: ${{ github.sha }}
+      IMAGE_TAG: ${{ github.ref_name }}
 
     steps:
       - uses: actions/checkout@v2
@@ -31,8 +34,8 @@ jobs:
 
       - name: Build, tag, and push image to Aliyun
         run: |
-          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
-          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -t $REGISTRY/$REPOSITORY:latest .
+          docker push -a $REGISTRY/$REPOSITORY
 
       - name: Modify deployment.yaml
         run: |
