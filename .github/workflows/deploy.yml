@@ -55,7 +55,7 @@ jobs:
         with:
           config: ${{ secrets.KUBE_CONFIG_DATA }}
           version: v1.22.0
-          command: rollout status deployment/simple-bank-api-deployment
+          command: rollout status deployment/simple-bank-api
 
       - name: Create service
         uses: steebchen/kubectl@master
