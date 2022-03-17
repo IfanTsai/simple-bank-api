@@ -3,7 +3,6 @@ module github.com/ifantsai/simple-bank-api
 go 1.17
 
 require (
-	github.com/IfanTsai/go-lib v0.0.0-20220202044319-ae26e492d417
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-playground/validator/v10 v10.9.0
 	github.com/golang/mock v1.6.0
@@ -15,6 +14,7 @@ require (
 )
 
 require (
+	github.com/IfanTsai/go-lib v0.0.0-20220317135801-5115cc3d1807 // indirect
 	github.com/aead/chacha20 v0.0.0-20180709150244-8b13a72661da // indirect
 	github.com/aead/chacha20poly1305 v0.0.0-20170617001512-233f39982aeb // indirect
 	github.com/aead/poly1305 v0.0.0-20180717145839-3fee0db0b635 // indirect
