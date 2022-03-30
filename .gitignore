@@ -19,3 +19,4 @@ tags
 bin/*
 logs/*
 api/logs/*
+*.log
