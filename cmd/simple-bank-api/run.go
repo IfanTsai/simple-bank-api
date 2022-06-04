@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"log"
 
-	"github.com/ifantsai/simple-bank-api/api"
 	db "github.com/ifantsai/simple-bank-api/db/sqlc"
+	"github.com/ifantsai/simple-bank-api/gapi"
 	"github.com/ifantsai/simple-bank-api/server"
 	"github.com/ifantsai/simple-bank-api/util"
 	_ "github.com/lib/pq"
@@ -23,10 +23,16 @@ func main() {
 	}
 
 	store := db.NewStore(conn)
-	srv, err := api.NewServer(config, store)
+
+	grpcServer, err := gapi.NewGRPCServer(config, store, config.GRPCServerAddress)
 	if err != nil {
-		log.Fatal("cannot new server:", err)
+		log.Fatal("cannot new gRPC server:", err)
 	}
 
-	server.Run(srv, config.GRPCServerAddress)
+	gatewayServer, err := gapi.NewGatewayServer(config, store, config.HTTPServerAddress)
+	if err != nil {
+		log.Fatal("cannot new gateway server:", err)
+	}
+
+	server.Run(grpcServer, gatewayServer)
 }

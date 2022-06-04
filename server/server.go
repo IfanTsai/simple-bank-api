@@ -10,20 +10,33 @@ import (
 )
 
 type Server interface {
-	Start(address string) error
+	Start() error
 	Stop(ctx context.Context) error
 }
 
-func Run(server Server, address string) {
-	go func() {
-		if err := server.Start(address); err != nil {
-			log.Fatal("cannot start server:", err)
-		}
-	}()
+func Run(servers ...Server) {
+	for _, server := range servers {
+		go func(server Server) {
+			if err := server.Start(); err != nil {
+				log.Fatal("cannot start server:", err)
+			}
+		}(server)
+	}
 
 	if err := process.GracefulShutdown(
 		func(ctx context.Context) error {
-			return errors.WithMessage(server.Stop(ctx), "failed to stop server")
+			var errRet error
+			for _, server := range servers {
+				if err := server.Stop(ctx); err != nil {
+					if errRet == nil {
+						errRet = err
+					} else {
+						errRet = errors.WithMessagef(errRet, err.Error())
+					}
+				}
+			}
+
+			return errRet
 		}, time.Second*10); err != nil {
 		log.Fatal("forced to stop server")
 	}
