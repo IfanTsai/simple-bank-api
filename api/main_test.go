@@ -5,10 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ifantsai/simple-bank-api/api"
-
 	"github.com/IfanTsai/go-lib/randutils"
 	"github.com/gin-gonic/gin"
+	"github.com/ifantsai/simple-bank-api/api"
 	db "github.com/ifantsai/simple-bank-api/db/sqlc"
 	"github.com/ifantsai/simple-bank-api/util"
 	"github.com/stretchr/testify/require"
