@@ -28,3 +28,5 @@ linters:
     - gochecknoglobals
     - goerr113
     - varnamelen
+    - exhaustruct
+    - nonamedreturns

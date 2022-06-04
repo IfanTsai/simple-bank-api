@@ -6,12 +6,10 @@ import (
 	"time"
 
 	"github.com/IfanTsai/go-lib/randutils"
-
+	"github.com/gin-gonic/gin"
 	db "github.com/ifantsai/simple-bank-api/db/sqlc"
 	"github.com/ifantsai/simple-bank-api/util"
 	"github.com/stretchr/testify/require"
-
-	"github.com/gin-gonic/gin"
 )
 
 func TestMain(m *testing.M) {

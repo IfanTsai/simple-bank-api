@@ -117,16 +117,14 @@ func (s *Server) loginUser(c *gin.Context) {
 	}
 
 	// Note: only use username
-	accessToken, accessTokenPayload, err :=
-		s.tokenMaker.CreateToken(0, user.Username, s.config.AccessTokenDuration)
+	accessToken, accessTokenPayload, err := s.tokenMaker.CreateToken(0, user.Username, s.config.AccessTokenDuration)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, errorResponse(err))
 
 		return
 	}
 
-	refreshToken, refreshTokenPayload, err :=
-		s.tokenMaker.CreateToken(0, user.Username, s.config.RefreshTokenDuration)
+	refreshToken, refreshTokenPayload, err := s.tokenMaker.CreateToken(0, user.Username, s.config.RefreshTokenDuration)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, errorResponse(err))
 

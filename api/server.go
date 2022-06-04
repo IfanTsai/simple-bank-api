@@ -1,7 +1,9 @@
 package api
 
 import (
+	"context"
 	"log"
+	"net/http"
 
 	"github.com/IfanTsai/go-lib/gin/middlewares"
 	"github.com/IfanTsai/go-lib/logger"
@@ -20,6 +22,7 @@ type Server struct {
 	store      db.Store
 	tokenMaker token.Maker
 	router     *gin.Engine
+	server     *http.Server
 }
 
 // NewServer creates a new HTTP server and setup routing.
@@ -82,7 +85,23 @@ func (s *Server) setupRouter() {
 
 // Start runs the HTTP server on a specific address.
 func (s *Server) Start(address string) error {
-	return errors.Wrap(s.router.Run(address), "failed to run server")
+	server := &http.Server{
+		Addr:    address,
+		Handler: s.router,
+	}
+
+	s.server = server
+
+	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		return errors.Wrap(err, "failed to start Gin server")
+	}
+
+	return nil
+}
+
+// Stop stops the HTTP server.
+func (s *Server) Stop(ctx context.Context) error {
+	return errors.Wrap(s.server.Shutdown(ctx), "failed to shutdown http server")
 }
 
 func errorResponse(err error) gin.H {
