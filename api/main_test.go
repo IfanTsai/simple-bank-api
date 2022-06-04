@@ -1,9 +1,11 @@
-package api
+package api_test
 
 import (
 	"os"
 	"testing"
 	"time"
+
+	"github.com/ifantsai/simple-bank-api/api"
 
 	"github.com/IfanTsai/go-lib/randutils"
 	"github.com/gin-gonic/gin"
@@ -17,13 +19,13 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func newTestServer(t *testing.T, store db.Store) *Server {
+func NewTestServer(t *testing.T, store db.Store) *api.Server {
 	config := util.Config{
 		TokenSymmetricKey:   randutils.RandomString(32),
 		AccessTokenDuration: time.Minute,
 	}
 
-	server, err := NewServer(config, store)
+	server, err := api.NewServer(config, store, "")
 	require.NoError(t, err)
 
 	return server

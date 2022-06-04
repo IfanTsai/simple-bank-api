@@ -23,10 +23,11 @@ type Server struct {
 	tokenMaker token.Maker
 	router     *gin.Engine
 	server     *http.Server
+	address    string
 }
 
 // NewServer creates a new HTTP server and setup routing.
-func NewServer(config util.Config, store db.Store) (*Server, error) {
+func NewServer(config util.Config, store db.Store, address string) (*Server, error) {
 	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot create token")
@@ -34,6 +35,7 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 	server := &Server{
 		config:     config,
 		store:      store,
+		address:    address,
 		tokenMaker: tokenMaker,
 	}
 
@@ -70,23 +72,25 @@ func (s *Server) setupRouter() {
 		middlewares.NewPrometheus("simple_bank", "api").Use(router)
 	}
 
-	router.POST("/users", s.createUser)
-	router.POST("/users/login", s.loginUser)
-	router.POST("/token/refresh_access", s.refreshAccessToken)
+	v1API := router.Group("/v1")
 
-	authRoutes := router.Group("/").Use(middlewares.Authorization(version, s.tokenMaker))
-	authRoutes.POST("/accounts", s.createAccount)
-	authRoutes.GET("/accounts/:id", s.getAccount)
-	authRoutes.GET("/accounts", s.listAccount)
-	authRoutes.POST("/transfers", s.createTransfer)
+	v1API.POST("users", s.createUser)
+	v1API.POST("users/login", s.loginUser)
+	v1API.POST("token/refresh_access", s.refreshAccessToken)
+
+	authRoutes := v1API.Use(middlewares.Authorization(version, s.tokenMaker))
+	authRoutes.POST("accounts", s.createAccount)
+	authRoutes.GET("accounts/:id", s.getAccount)
+	authRoutes.GET("accounts", s.listAccount)
+	authRoutes.POST("transfers", s.createTransfer)
 
 	s.router = router
 }
 
 // Start runs the HTTP server on a specific address.
-func (s *Server) Start(address string) error {
+func (s *Server) Start() error {
 	server := &http.Server{
-		Addr:    address,
+		Addr:    s.address,
 		Handler: s.router,
 	}
 
@@ -102,6 +106,14 @@ func (s *Server) Start(address string) error {
 // Stop stops the HTTP server.
 func (s *Server) Stop(ctx context.Context) error {
 	return errors.Wrap(s.server.Shutdown(ctx), "failed to shutdown http server")
+}
+
+func (s *Server) GetTokenMaker() token.Maker {
+	return s.tokenMaker
+}
+
+func (s *Server) Getrouter() *gin.Engine {
+	return s.router
 }
 
 func errorResponse(err error) gin.H {
