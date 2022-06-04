@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/IfanTsai/go-lib/randutils"
-
 	"github.com/ifantsai/simple-bank-api/util"
 	"github.com/stretchr/testify/require"
 )

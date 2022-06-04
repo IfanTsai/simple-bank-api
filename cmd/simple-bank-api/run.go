@@ -6,6 +6,7 @@ import (
 
 	"github.com/ifantsai/simple-bank-api/api"
 	db "github.com/ifantsai/simple-bank-api/db/sqlc"
+	"github.com/ifantsai/simple-bank-api/server"
 	"github.com/ifantsai/simple-bank-api/util"
 	_ "github.com/lib/pq"
 )
@@ -22,12 +23,10 @@ func main() {
 	}
 
 	store := db.NewStore(conn)
-	server, err := api.NewServer(config, store)
+	srv, err := api.NewServer(config, store)
 	if err != nil {
 		log.Fatal("cannot new server:", err)
 	}
 
-	if err := server.Start(config.ServerAddress); err != nil {
-		log.Fatal("cannot start server:", err)
-	}
+	server.Run(srv, config.GRPCServerAddress)
 }

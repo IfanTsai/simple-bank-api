@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/IfanTsai/go-lib/randutils"
-
 	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/bcrypt"
 )

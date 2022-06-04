@@ -70,8 +70,8 @@ func (s *Server) refreshAccessToken(c *gin.Context) {
 	}
 
 	// Note: only use username
-	accessToken, accessTokenPayload, err :=
-		s.tokenMaker.CreateToken(0, refreshTokenPayload.Username, s.config.AccessTokenDuration)
+	accessToken, accessTokenPayload, err := s.tokenMaker.CreateToken(
+		0, refreshTokenPayload.Username, s.config.AccessTokenDuration)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, errorResponse(err))
 

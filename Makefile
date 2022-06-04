@@ -37,13 +37,21 @@ test:
 mock:
 	mockgen -package mockdb -destination db/mock/store.go  github.com/ifantsai/simple-bank-api/db/sqlc Store
 
+proto:
+	rm -f pb/*.go
+	protoc --proto_path=proto --go_out=pb --go_opt=paths=source_relative \
+    --go-grpc_out=pb --go-grpc_opt=paths=source_relative \
+    proto/*.proto
+
 server:
 	go run main.go
 
+evans:
+	evans --host localhost --port 9090 -r repl
 deps:
 	go get github.com/kyleconroy/sqlc/cmd/sqlc
 	curl -L https://packagecloud.io/golang-migrate/migrate/gpgkey | apt-key add -
 	echo "deb https://packagecloud.io/golang-migrate/migrate/ubuntu/ $$(lsb_release -sc) main" > /etc/apt/sources.list.d/migrate.list
 	apt update && apt install -y migrate
 
-.PHONY: postgres createdb dropdb migrateup migratedown migrateup1 migratedown1 deps sqlc test server mock dbdocs dbscheme
+.PHONY: postgres createdb dropdb migrateup migratedown migrateup1 migratedown1 deps sqlc test server mock dbdocs dbscheme proto evans
