@@ -52,7 +52,6 @@ func (s *GRPCServer) Start() error {
 	}
 
 	s.server = grpcServer
-
 	log.Println("gRPC server is listening on", s.address)
 
 	return errors.Wrap(grpcServer.Serve(listener), "failed to run gRPC server")

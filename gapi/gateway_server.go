@@ -10,6 +10,7 @@ import (
 	"github.com/ifantsai/simple-bank-api/pb"
 	"github.com/ifantsai/simple-bank-api/util"
 	"github.com/pkg/errors"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -53,6 +54,10 @@ func (s *GatewayServer) Start() error {
 
 	mux := http.NewServeMux()
 	mux.Handle("/", grpcMux)
+
+	fs := http.FileServer(http.Dir("./doc/"))
+	mux.Handle("/doc/", http.StripPrefix("/doc/", fs))
+	mux.Handle("/swagger/", httpSwagger.Handler(httpSwagger.URL("/doc/swagger/simple_bank.swagger.json")))
 
 	server := &http.Server{
 		Addr:    s.address,
