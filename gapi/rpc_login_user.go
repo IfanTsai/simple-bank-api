@@ -7,6 +7,7 @@ import (
 	db "github.com/ifantsai/simple-bank-api/db/sqlc"
 	"github.com/ifantsai/simple-bank-api/pb"
 	"github.com/ifantsai/simple-bank-api/util"
+	"github.com/ifantsai/simple-bank-api/validator"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -14,6 +15,11 @@ import (
 )
 
 func (s *GRPCServer) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (*pb.LoginUserResponse, error) {
+	violations := validateLoginUserRequest(req)
+	if len(violations) != 0 {
+		return nil, invalidParameters(violations)
+	}
+
 	user, err := s.store.GetUser(ctx, req.GetUsername())
 	if err != nil {
 		errorCode := codes.Internal
@@ -62,4 +68,18 @@ func (s *GRPCServer) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (*
 		AccessTokenExpiresAt:  timestamppb.New(accessTokenPayload.ExpiredAt),
 		RefreshTokenExpiresAt: timestamppb.New(refreshTokenPayload.ExpiredAt),
 	}, nil
+}
+
+func validateLoginUserRequest(req *pb.LoginUserRequest) []*BadRequestFieldViolation {
+	var violations []*BadRequestFieldViolation
+
+	if err := validator.ValidateUsername(req.GetUsername()); err != nil {
+		violations = append(violations, fieldViolation("username", err))
+	}
+
+	if err := validator.ValidatePassword(req.GetPassword()); err != nil {
+		violations = append(violations, fieldViolation("password", err))
+	}
+
+	return violations
 }

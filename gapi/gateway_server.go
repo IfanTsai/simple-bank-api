@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	db "github.com/ifantsai/simple-bank-api/db/sqlc"
@@ -60,8 +61,9 @@ func (s *GatewayServer) Start() error {
 	mux.Handle("/swagger/", httpSwagger.Handler(httpSwagger.URL("/doc/swagger/simple_bank.swagger.json")))
 
 	server := &http.Server{
-		Addr:    s.address,
-		Handler: mux,
+		Addr:              s.address,
+		Handler:           mux,
+		ReadHeaderTimeout: 5 * time.Second,
 	}
 
 	s.server = server

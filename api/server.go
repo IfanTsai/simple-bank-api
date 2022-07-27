@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/IfanTsai/go-lib/gin/middlewares"
 	"github.com/IfanTsai/go-lib/logger"
@@ -53,7 +54,7 @@ func NewServer(config util.Config, store db.Store, address string) (*Server, err
 func (s *Server) setupRouter() {
 	version := "1.0.0"
 
-	_logger, err := logger.NewJSONLogger(
+	jsonLogger, err := logger.NewJSONLogger(
 		logger.WithDisableConsole(),
 		logger.WithFileRotationP("./logs/simple-bank.log"),
 	)
@@ -63,8 +64,8 @@ func (s *Server) setupRouter() {
 
 	router := gin.New()
 	router.Use(
-		middlewares.Logger(_logger),
-		middlewares.Recovery(version, _logger, true),
+		middlewares.Logger(jsonLogger),
+		middlewares.Recovery(version, jsonLogger, true),
 		middlewares.Jsonifier(version),
 	)
 
@@ -90,8 +91,9 @@ func (s *Server) setupRouter() {
 // Start runs the HTTP server on a specific address.
 func (s *Server) Start() error {
 	server := &http.Server{
-		Addr:    s.address,
-		Handler: s.router,
+		Addr:              s.address,
+		Handler:           s.router,
+		ReadHeaderTimeout: 5 * time.Second,
 	}
 
 	s.server = server
