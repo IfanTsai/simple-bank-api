@@ -4,11 +4,18 @@ import (
 	"database/sql"
 	"log"
 
+
+	"github.com/pkg/errors"
+
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	db "github.com/ifantsai/simple-bank-api/db/sqlc"
 	"github.com/ifantsai/simple-bank-api/gapi"
 	"github.com/ifantsai/simple-bank-api/server"
 	"github.com/ifantsai/simple-bank-api/util"
 	_ "github.com/lib/pq"
+	"github.com/pkg/errors"
 )
 
 func main() {
@@ -21,6 +28,8 @@ func main() {
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)
 	}
+
+	runDBMigration(config.DBMigrationURL, config.DBSource)
 
 	store := db.NewStore(conn)
 
@@ -35,4 +44,17 @@ func main() {
 	}
 
 	server.Run(grpcServer, gatewayServer)
+}
+
+func runDBMigration(url string, source string) {
+	migration, err := migrate.New(url, source)
+	if err != nil {
+		log.Fatal("cannot new migration:", err)
+	}
+
+	if err := migration.Up(); errors.Is(err, migrate.ErrNoChange) {
+		log.Fatal("cannot migrate:", err)
+	}
+
+	log.Println("migration done")
 }
