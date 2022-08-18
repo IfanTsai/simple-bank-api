@@ -45,7 +45,7 @@ func (s *Server) createAccount(c *gin.Context) {
 		Balance:  0,
 	})
 	if err != nil {
-		if pqErr, ok := err.(*pq.Error); ok { // nolint: errorlint
+		if pqErr, ok := err.(*pq.Error); ok { //nolint: errorlint
 			switch pqErr.Code.Name() {
 			case "foreign_key_violation", "unique_violation":
 				c.JSON(http.StatusForbidden, errorResponse(err))

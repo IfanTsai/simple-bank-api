@@ -74,7 +74,7 @@ func (s *Server) createUser(c *gin.Context) {
 		Email:          req.Email,
 	})
 	if err != nil {
-		if pqErr, ok := err.(*pq.Error); ok { // nolint: errorlint
+		if pqErr, ok := err.(*pq.Error); ok { //nolint: errorlint
 			switch pqErr.Code.Name() {
 			case "unique_violation":
 				c.JSON(http.StatusForbidden, errorResponse(err))
