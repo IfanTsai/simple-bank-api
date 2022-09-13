@@ -52,10 +52,15 @@ server:
 
 evans:
 	evans --host localhost --port 9090 -r repl
+
 deps:
-	go get github.com/kyleconroy/sqlc/cmd/sqlc
-	curl -L https://packagecloud.io/golang-migrate/migrate/gpgkey | apt-key add -
-	echo "deb https://packagecloud.io/golang-migrate/migrate/ubuntu/ $$(lsb_release -sc) main" > /etc/apt/sources.list.d/migrate.list
-	apt update && apt install -y migrate
+	go install github.com/kyleconroy/sqlc/cmd/sqlc@latest
+	go install github.com/golang/mock/mockgen@latest
+	go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+	go install \
+		github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway \
+		github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2 \
+		google.golang.org/protobuf/cmd/protoc-gen-go \
+		google.golang.org/grpc/cmd/protoc-gen-go-grpc
 
 .PHONY: postgres createdb dropdb migrateup migratedown migrateup1 migratedown1 deps sqlc test server mock dbdocs dbscheme proto evans
