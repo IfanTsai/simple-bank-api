@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/IfanTsai/go-lib/gin/middlewares"
-	"github.com/IfanTsai/go-lib/randutils"
 	"github.com/IfanTsai/go-lib/user/token"
+	"github.com/IfanTsai/go-lib/utils/randutils"
 	"github.com/golang/mock/gomock"
 	mockdb "github.com/ifantsai/simple-bank-api/db/mock"
 	db "github.com/ifantsai/simple-bank-api/db/sqlc"

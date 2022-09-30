@@ -3,7 +3,7 @@ package util
 import (
 	"testing"
 
-	"github.com/IfanTsai/go-lib/randutils"
+	"github.com/IfanTsai/go-lib/utils/randutils"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/bcrypt"
 )

@@ -54,13 +54,9 @@ func NewServer(config util.Config, store db.Store, address string) (*Server, err
 func (s *Server) setupRouter() {
 	version := "1.0.0"
 
-	jsonLogger, err := logger.NewJSONLogger(
-		logger.WithDisableConsole(),
+	jsonLogger := logger.NewJSONLogger(
 		logger.WithFileRotationP("./logs/simple-bank.log"),
 	)
-	if err != nil {
-		log.Fatalln("cannot new json logger, err:", err)
-	}
 
 	router := gin.New()
 	router.Use(

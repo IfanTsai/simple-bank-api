@@ -11,7 +11,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/IfanTsai/go-lib/randutils"
+	"github.com/IfanTsai/go-lib/utils/randutils"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
 	mockdb "github.com/ifantsai/simple-bank-api/db/mock"

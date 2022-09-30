@@ -3,7 +3,7 @@ package util
 import (
 	"fmt"
 
-	"github.com/IfanTsai/go-lib/randutils"
+	"github.com/IfanTsai/go-lib/utils/randutils"
 )
 
 // RandomOwner generates a random owner name.
