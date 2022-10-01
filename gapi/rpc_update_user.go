@@ -15,9 +15,18 @@ import (
 )
 
 func (s *GRPCServer) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
+	payload, err := s.authorizeUser(ctx)
+	if err != nil {
+		return nil, unauthenticatedError(err)
+	}
+
 	violations := validateUpdateUserRequest(req)
 	if len(violations) != 0 {
 		return nil, invalidParameters(violations)
+	}
+
+	if payload.Username != req.Username {
+		return nil, status.Errorf(codes.PermissionDenied, "cannot update user %s", req.Username)
 	}
 
 	arg := db.UpdateUserParams{
