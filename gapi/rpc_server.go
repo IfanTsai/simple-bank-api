@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 
+	"github.com/IfanTsai/go-lib/logger"
 	"github.com/IfanTsai/go-lib/user/token"
 	db "github.com/ifantsai/simple-bank-api/db/sqlc"
 	"github.com/ifantsai/simple-bank-api/pb"
@@ -42,7 +43,14 @@ func NewGRPCServer(config util.Config, store db.Store, address string) (*GRPCSer
 
 // Start runs the gRPC server on a specific address.
 func (s *GRPCServer) Start() error {
-	grpcServer := grpc.NewServer()
+	jsonLogger := logger.NewJSONLogger(
+		logger.WithFileRotationP("./logs/simple-bank.log"),
+		logger.WithEnableConsole(),
+	)
+
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(GRPCLogger(jsonLogger)),
+	)
 	pb.RegisterSimpleBankServer(grpcServer, s)
 	reflection.Register(grpcServer)
 
