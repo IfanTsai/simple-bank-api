@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/IfanTsai/go-lib/logger"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	db "github.com/ifantsai/simple-bank-api/db/sqlc"
 	"github.com/ifantsai/simple-bank-api/pb"
@@ -35,6 +36,11 @@ func NewGatewayServer(config util.Config, store db.Store, address string) (*Gate
 
 // Start runs the gateway server on a specific address.
 func (s *GatewayServer) Start() error {
+	jsonLogger := logger.NewJSONLogger(
+		logger.WithFileRotationP("./logs/simple-bank.log"),
+		logger.WithEnableConsole(),
+	)
+
 	grpcMux := runtime.NewServeMux(
 		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
 			MarshalOptions: protojson.MarshalOptions{
@@ -62,7 +68,7 @@ func (s *GatewayServer) Start() error {
 
 	server := &http.Server{
 		Addr:              s.address,
-		Handler:           mux,
+		Handler:           HTTPLogger(jsonLogger)(mux),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
