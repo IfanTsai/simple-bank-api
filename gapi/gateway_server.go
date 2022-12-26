@@ -11,6 +11,7 @@ import (
 	db "github.com/ifantsai/simple-bank-api/db/sqlc"
 	"github.com/ifantsai/simple-bank-api/pb"
 	"github.com/ifantsai/simple-bank-api/util"
+	"github.com/ifantsai/simple-bank-api/worker"
 	"github.com/pkg/errors"
 	httpSwagger "github.com/swaggo/http-swagger"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -23,8 +24,10 @@ type GatewayServer struct {
 }
 
 // NewGatewayServer creates a new gateway server and setup routing.
-func NewGatewayServer(config util.Config, store db.Store, address string) (*GatewayServer, error) {
-	grpcServer, err := NewGRPCServer(config, store, address)
+func NewGatewayServer(
+	config util.Config, store db.Store, address string, taskDistributor worker.TaskDistributor,
+) (*GatewayServer, error) {
+	grpcServer, err := NewGRPCServer(config, store, address, taskDistributor)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot new grpc server")
 	}

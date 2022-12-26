@@ -4,13 +4,16 @@ import (
 	"database/sql"
 	"log"
 
+	"github.com/IfanTsai/go-lib/logger"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/hibiken/asynq"
 	db "github.com/ifantsai/simple-bank-api/db/sqlc"
 	"github.com/ifantsai/simple-bank-api/gapi"
 	"github.com/ifantsai/simple-bank-api/server"
 	"github.com/ifantsai/simple-bank-api/util"
+	"github.com/ifantsai/simple-bank-api/worker"
 	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
 )
@@ -30,17 +33,30 @@ func main() {
 
 	store := db.NewStore(conn)
 
-	grpcServer, err := gapi.NewGRPCServer(config, store, config.GRPCServerAddress)
+	workerLogger := logger.NewJSONLogger(
+		logger.WithFileRotationP("./logs/worker.log"),
+		logger.WithEnableConsole(),
+	)
+
+	redisOpt := asynq.RedisClientOpt{
+		Addr: config.RedisAddress,
+	}
+
+	taskDistributor := worker.NewRedisTaskDistributor(redisOpt, worker.WithLogger(workerLogger))
+
+	grpcServer, err := gapi.NewGRPCServer(config, store, config.GRPCServerAddress, taskDistributor)
 	if err != nil {
 		log.Fatal("cannot new gRPC server:", err)
 	}
 
-	gatewayServer, err := gapi.NewGatewayServer(config, store, config.HTTPServerAddress)
+	gatewayServer, err := gapi.NewGatewayServer(config, store, config.HTTPServerAddress, taskDistributor)
 	if err != nil {
 		log.Fatal("cannot new gateway server:", err)
 	}
 
-	server.Run(grpcServer, gatewayServer)
+	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store, worker.WithLogger(workerLogger))
+
+	server.Run(taskProcessor, grpcServer, gatewayServer)
 }
 
 func runDBMigration(url string, source string) {
