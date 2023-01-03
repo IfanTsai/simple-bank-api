@@ -4,6 +4,9 @@ postgres:
 	docker run --name postgres12 -p 5432:5432 \
 		-e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -e POSTGRES_DB=simple_bank -d postgres:12-alpine
 
+redis:
+	docker run --name redis -p 6379:6379 -d redis:7-alpine
+
 createdb:
 	docker exec -it postgres12 createdb --username=root --owner=root simple_bank
 
@@ -63,4 +66,4 @@ deps:
 		google.golang.org/protobuf/cmd/protoc-gen-go \
 		google.golang.org/grpc/cmd/protoc-gen-go-grpc
 
-.PHONY: postgres createdb dropdb migrateup migratedown migrateup1 migratedown1 deps sqlc test server mock dbdocs dbscheme proto evans
+.PHONY: postgres createdb dropdb migrateup migratedown migrateup1 migratedown1 deps sqlc test server mock dbdocs dbscheme proto evans redis

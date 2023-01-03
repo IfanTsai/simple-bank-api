@@ -10,6 +10,7 @@ import (
 	db "github.com/ifantsai/simple-bank-api/db/sqlc"
 	"github.com/ifantsai/simple-bank-api/pb"
 	"github.com/ifantsai/simple-bank-api/util"
+	"github.com/ifantsai/simple-bank-api/worker"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -18,24 +19,28 @@ import (
 // GRPCServer serves gRPC requests for our banking service.
 type GRPCServer struct {
 	pb.UnimplementedSimpleBankServer
-	config     util.Config
-	store      db.Store
-	tokenMaker token.Maker
-	server     *grpc.Server
-	address    string
+	server          *grpc.Server
+	config          util.Config
+	store           db.Store
+	tokenMaker      token.Maker
+	address         string
+	taskDistributor worker.TaskDistributor
 }
 
 // NewGRPCServer creates a new gRPC server and setup routing.
-func NewGRPCServer(config util.Config, store db.Store, address string) (*GRPCServer, error) {
+func NewGRPCServer(
+	config util.Config, store db.Store, address string, taskDistributor worker.TaskDistributor,
+) (*GRPCServer, error) {
 	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot create token")
 	}
 	server := &GRPCServer{
-		config:     config,
-		store:      store,
-		address:    address,
-		tokenMaker: tokenMaker,
+		config:          config,
+		store:           store,
+		address:         address,
+		taskDistributor: taskDistributor,
+		tokenMaker:      tokenMaker,
 	}
 
 	return server, nil

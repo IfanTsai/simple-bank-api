@@ -2,11 +2,14 @@ package gapi
 
 import (
 	"context"
+	"time"
 
+	"github.com/hibiken/asynq"
 	db "github.com/ifantsai/simple-bank-api/db/sqlc"
 	"github.com/ifantsai/simple-bank-api/pb"
 	"github.com/ifantsai/simple-bank-api/util"
 	"github.com/ifantsai/simple-bank-api/validator"
+	"github.com/ifantsai/simple-bank-api/worker"
 	"github.com/lib/pq"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -23,12 +26,25 @@ func (s *GRPCServer) CreateUser(ctx context.Context, req *pb.CreateUserRequest) 
 		return nil, status.Errorf(codes.Internal, "failed to hash password: %s", err)
 	}
 
-	user, err := s.store.CreateUser(ctx, db.CreateUserParams{
-		Username:       req.GetUsername(),
-		HashedPassword: hashedPassword,
-		FullName:       req.GetFullName(),
-		Email:          req.GetEmail(),
+	txResult, err := s.store.CreateUserTx(ctx, db.CreateUserTxParams{
+		CreateUserParams: db.CreateUserParams{
+			Username:       req.GetUsername(),
+			HashedPassword: hashedPassword,
+			FullName:       req.GetFullName(),
+			Email:          req.GetEmail(),
+		},
+		AfterCreate: func(user db.User) error {
+			taskPayload := &worker.PayloadSendVerifyEmail{Username: req.GetUsername()}
+			taskAsynqOpts := []asynq.Option{
+				asynq.MaxRetry(10),
+				asynq.ProcessIn(1 * time.Second),
+				asynq.Queue(worker.QueueCritical),
+			}
+
+			return s.taskDistributor.DistributeTaskSendVerifyEmail(ctx, taskPayload, taskAsynqOpts...)
+		},
 	})
+
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok { //nolint: errorlint
 			switch pqErr.Code.Name() {
@@ -41,7 +57,7 @@ func (s *GRPCServer) CreateUser(ctx context.Context, req *pb.CreateUserRequest) 
 	}
 
 	return &pb.CreateUserResponse{
-		User: convertUser(&user),
+		User: convertUser(&txResult.User),
 	}, nil
 }
 
